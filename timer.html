@@ -81,16 +81,21 @@
 		</style>
 		<!-- Button Styles -->
 		<style>
+			#view.started .number,
+			#view.paused .number{
+				color:#777777;
+				background-color:#333333;
+			}
+			#view.started .start{
+				display:none;
+			}
+			#view.paused .stop,
+			#view.idle .stop{
+				display:none;
+			}
 			.number{
 				background-color:#FFFFFF;
 				cursor:pointer;
-			}
-			.active:active{
-				background-color:#BBBBBB;
-			}
-			.inactive{
-				color:#777777;
-				background-color:#333333;
 			}
 			.gray{
 				background-color:#555555;
@@ -128,7 +133,7 @@
 		</style>
 	</head>
 	<body onresize='resize()'>
-		<div id='view'>
+		<div id='view' class='idle'>
 			<div id='container-horizontal'>
 				<table>
 					<tr>
@@ -141,20 +146,20 @@
 						</td>
 					</tr>
 					<tr>
-						<td class='number active'>1</td>
-						<td class='number active'>2</td>
-						<td class='number active'>3</td>
-						<td class='number active'>4</td>
-						<td class='number active'>5</td>
+						<td class='number'>1</td>
+						<td class='number'>2</td>
+						<td class='number'>3</td>
+						<td class='number'>4</td>
+						<td class='number'>5</td>
 						<td class='start' onclick='start()'>Start</td>
-						<td class='stop' onclick='stop()' style='display:none'>Stop</td>
+						<td class='stop' onclick='pause()'>Stop</td>
 					</tr>
 					<tr>
-						<td class='number active'>6</td>
-						<td class='number active'>7</td>
-						<td class='number active'>8</td>
-						<td class='number active'>9</td>
-						<td class='number active'>0</td>
+						<td class='number'>6</td>
+						<td class='number'>7</td>
+						<td class='number'>8</td>
+						<td class='number'>9</td>
+						<td class='number'>0</td>
 						<td class='reset' onclick='reset()'>Reset</td>
 					</tr>
 				</table>
@@ -187,7 +192,7 @@
 					</tr>
 					<tr>
 						<td class='start' onclick='start()'>Start</td>
-						<td class='stop' onclick='stop()' style='display:none'>Stop</td>
+						<td class='stop' onclick='pause()'>Stop</td>
 						<td class='number active'>0</td>
 						<td class='reset' onclick='reset()'>Reset</td>
 					</tr>
@@ -198,7 +203,125 @@
 	</body>
 	<script src='js/jquery-1.10.2.min.js'></script>
 	<script type='text/javascript'>
-		var hour, min, sec, increment, interval_id;
+		var inputTimeString = '';
+
+		var Display = {
+			Update: function (ms) {
+				var sec = Math.floor(ms / 1000);
+				var hour = Math.floor(sec / 3600);
+				sec = sec - (hour * 3600);
+				var min = Math.floor(sec / 60);
+				sec = sec - (min * 60);
+				
+				if (hour > 0) {
+					$('.hour').text(hour+'h');
+					$('.min').text(this.Pad(min+'m',3));
+					$('.sec').text(this.Pad(sec+'s',3));
+					return;
+				}
+				$('.hour').text('');
+				
+				if (min > 0) {
+					$('.min').text(min+'m');
+					$('.sec').text(this.Pad(sec+'s',3));
+					return;
+				}
+				$('.min').text('');
+
+				$('.sec').text(sec+'s');
+			},
+			StartAlarm: function () {
+				if (this.state != 'idle')
+					return;
+				this.FlashInterval();
+				this.interval_id = setInterval(this.FlashInterval, 1000);
+				document.getElementById('alarm').play();
+				this.state = "alarm";
+			},
+			Reset: function () {
+				document.getElementById('alarm').pause();
+				this.Update(0);
+				this.StopAlarm();
+				this.state = "idle";
+			},
+			interval_id: 0,
+			state: "idle",
+			StopAlarm: function () {
+				$('.display').attr('class','display gray');
+				window.clearInterval(this.interval_id);
+				this.state = "idle";
+			},
+			FlashInterval: function () {
+				if ($('.display').attr('class') != 'display red')
+					$('.display').attr('class','display red');
+				else
+					$('.display').attr('class','display gray');
+			},
+			Pad: function (str, max) {
+				return str.length < max ? this.Pad("0" + str, max) : str;
+			}
+		}
+
+		var Timer = {
+			SetDuration: function (ms) {
+				this.duration = ms;
+				this.countdown = (this.duration != 0);
+			},
+			Start: function () {
+				currentTime = new Date().getTime();
+				this.endTime = currentTime + this.duration;
+				setTimeout(this.TimerInterval, 1);
+				this.interval_id = setInterval(this.TimerInterval, 1000);
+				this.state = "started";
+			},
+			Pause: function () {
+				clearInterval(this.interval_id);
+				currentTime = new Date().getTime();
+				this.duration = this.endTime - currentTime;
+				this.state = "paused";
+			},
+			Reset: function () {
+				clearInterval(this.interval_id);
+				Display.Reset();
+
+				endTime = 0;
+				countdown = false;
+				duration = 0;
+				this.state = "idle";
+			},
+			endTime: 0,
+			countdown: false,
+			interval_id: 0,
+			duration: 0,
+			state: "idle",
+			TimerInterval: function() {
+				var currentTime = new Date().getTime();
+				var timeDif = Timer.endTime - currentTime;
+				if (Timer.countdown && timeDif < 0) {
+					window.clearInterval(Timer.interval_id);
+					Display.Update(0);
+					Display.StartAlarm();
+					View.SetAlarm();
+					this.state = "alarm";
+				} else if (Timer.countdown) {
+					Display.Update(timeDif+1000);
+				} else {
+					Display.Update(timeDif*-1);
+				}
+			}
+		}
+
+		var View = {
+			SetStarted: function () {
+				$("#view").attr("class","started");
+			},
+			SetPaused: function () {
+				$("#view").attr("class","paused");
+			},
+			Reset: function () {
+				$("#view").attr("class","idle");
+			}
+		}
 
 		$(document).ready(reset(), resize());
 
@@ -235,131 +358,47 @@
 			$('body').css('font-size', Math.floor(size*0.32));
 		}
 
-		/* Decrement the timer and turn on the alarm when the timer has reached 0 */
-		function countdown(){
-			--sec;
-			if (sec == -1) {
-				sec = 59;
-				--min;
-				if (min == -1) {
-					min = 59;
-					--hour;
-				}
-			}
-			updateTime();
-
-			if (hour+min+sec == 0){
-				window.clearInterval(interval_id);
-				document.getElementById('alarm').play();
-				$('.display').attr('class','display red');
-				state = 'flashing';
-				interval_id = window.setInterval(flash, 1000);
-			}
-		}
-
-		/* Increment the timer */
-		function countup(){
-			++sec;
-			if (sec == 60) {
-				sec = 0;
-				++min;
-				if (min == 60) {
-					min = 0;
-					++hour;
-				}
-			}
-			updateTime();
-		}
-
-		/* Flashed the display between grey and red */
-		function flash(){
-			if ($('.display').attr('class') == 'display gray')
-				$('.display').attr('class','display red');
-			else
-				$('.display').attr('class','display gray');
-		}
-
 		/* Starts either a countdown or countup timer */
 		function start(){
-			state = 'started';
-
-			$('.start').hide();
-			$('.stop').show();
-			$('.number').removeClass('active').addClass('inactive');
-
-			
-			if (increment)
-				interval_id = window.setInterval(countup, 1000);
-			else
-				interval_id = window.setInterval(countdown, 1000);
+			if ($("#view.idle").length > 0) {
+				Timer.SetDuration(convertToMs(inputTimeString));
+			}
+			Timer.Start();
+			View.SetStarted();
 		}
 
 		/* Pauses the timer */
-		function stop(){
-			if (hour+min+sec == 0) {
+		function pause(){
+			if (Display.state == "alarm") {
 				reset();
-			} else {
-				$('.start').show();
-				$('.stop').hide();
-				window.clearInterval(interval_id);
+				return;
 			}
+			Timer.Pause();
+			View.SetPaused();
 		}
 
 		/* Resets the timer back to 0 */
 		function reset(){
-			$('.start').show();
-			$('.stop').hide();
-			$('.number').removeClass('inactive').addClass('active');
-			$('.display').attr('class','display gray');
-			window.clearInterval(interval_id);
-			document.getElementById('alarm').pause();
-
-			hour = 0;
-			min = 0;
-			sec = 0;
-			increment = true;
-			updateTime();
-		}
-
-		/* Displays the current time of the timer */
-		function updateTime(){
-			if (hour > 0) {
-				$('.hour').text(hour+'h');
-				$('.min').text(pad(min+'m',3));
-				$('.sec').text(pad(sec+'s',3));
-				return;
-			}
-			$('.hour').text('');
-			
-			if (min > 0) {
-				$('.min').text(min+'m');
-				$('.sec').text(pad(sec+'s',3));
-				return;
-			}
-			$('.min').text('');
-
-			$('.sec').text(sec+'s');
-		}
-
-		/* Adds 0's to the front of a string */
-		function pad (str, max) {
-			return str.length < max ? pad("0" + str, max) : str;
+			inputTimeString = "";
+			Timer.Reset();
+			View.Reset();
 		}
 
 		/* Adds a digit to the end of the display */
 		$('.number').click(function(){
-			if ($(this).hasClass('inactive'))
+			if ($("#view.idle").length == 0)
 				return;
-			n = parseInt($(this).html());
-			if (hour+min+sec+n == 0)
-				return;
-			increment = false;
-			hour = Math.floor( hour*10 + min*0.1 );
-			min = min - 10*Math.floor(min*0.1);
-			min = Math.floor(10*min+sec*0.1);
-			sec = sec - 10*Math.floor(sec*0.1);
-			sec = 10*sec+n;
-			updateTime();
+			inputTimeString = inputTimeString + $(this).html();
+			Display.Update(convertToMs(inputTimeString));
 		});
+		
+		function convertToMs(timeString) {
+			var ts = '00000' + inputTimeString;
+			var l = ts.length;
+			var sec = 0 + ts.substr(l-2,2);
+			var sec = +sec + ts.substr(l-4,2) * 60;
+			var sec = +sec + ts.substr(0,l-4) * 3600;
+			return sec * 1000;
+		}
 	</script>
 </html>
