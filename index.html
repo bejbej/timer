@@ -1,404 +1,463 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset='utf-8' />
-		<title>Timer</title>
-		<!-- Main Document -->
-		<style>
-			body{
-				background-color:#333333;
-				overflow:hidden;
-				-ms-touch-action:none;
-			}
-			#view{
-				width:100%;
-				height:100%;
-				left:0px;
-				top:0px;
-				position:fixed;
-			}
-			.display{
-				color:white;
-				padding-right:1em;
-				padding-left:1em;
-				font-weight:normal;
-				font-family:monospace;
-			}
-			.right{
-				float:right;
-				width:100%;
-				text-align:right;
-			}
-		</style>
-		<!-- Horizontal Layout -->
-		<style>
-			#container-horizontal{
-				bottom:0;
-				left:0;
-				top:0;
-				right:0;
-				margin:auto;
-				position:absolute;
-			}
-			#container-horizontal table{
-				width:100%;
-				height:100%;
-				border:0.4em solid rgba(33,194,86, 0);
-				border-spacing:.1em;
-			}
-			#container-horizontal table tr td{
-				text-align:center;
-				font-family:monospace;
-				width: 16.666%;
-				font-weight:bold;
-			}
-		</style>
-		<!-- Vertical Layout -->
-		<style>
-			#container-vertical{
-				bottom:0;
-				left:0;
-				top:0;
-				right:0;
-				margin:auto;
-				position:absolute;
-			}
-			#container-vertical table{
-				width:100%;
-				height:100%;
-				border:0.4em solid rgba(33,194,86, 0);
-				border-spacing:.1em;
-			}
-			#container-vertical table tr td{
-				text-align:center;
-				font-family:monospace;
-				width: 33.333%;
-				font-weight:bold;
-			}
-			#container-vertical table tr td.display{
-				font-size:1em;
-			}
-		</style>
-		<!-- Button Styles -->
-		<style>
-			#view.started .number,
-			#view.paused .number{
-				color:#777777;
-				background-color:#333333;
-			}
-			#view.started .start{
-				display:none;
-			}
-			#view.paused .stop,
-			#view.idle .stop{
-				display:none;
-			}
-			.number{
-				background-color:#FFFFFF;
-				cursor:pointer;
-			}
-			.gray{
-				background-color:#555555;
-			}
-			.red{
-				background-color:rgb(194,33,86);
-			}
-			.start{
-				color:white;
-				background-color:rgb(33,194,86);
-				font-size:0.7em;
-				cursor:pointer;
-			}
-			.start:active{
-				background-color:rgb(24,142,63);
-			}
-			.stop{
-				color:white;
-				background-color:rgb(194,33,86);
-				font-size:0.7em;
-				cursor:pointer;
-			}
-			.stop:active{
-				background-color:rgb(142,24,63);
-			}
-			.reset{
-				color:white;
-				background-color:rgb(33,86,194);
-				font-size:0.7em;
-				cursor:pointer;
-			}
-			.reset:active{
-				background-color:rgb(24,63,142);
-			}
-		</style>
-	</head>
-	<body onresize='resize()'>
-		<div id='view' class='idle'>
-			<div id='container-horizontal'>
-				<table>
-					<tr>
-						<td colspan='6' class='display gray'>
-							<div class='right'>
-								<span class='hour'></span>
-								<span class='min'></span>
-								<span class='sec'>0s</span>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td class='number'>1</td>
-						<td class='number'>2</td>
-						<td class='number'>3</td>
-						<td class='number'>4</td>
-						<td class='number'>5</td>
-						<td class='start' onclick='start()'>Start</td>
-						<td class='stop' onclick='pause()'>Stop</td>
-					</tr>
-					<tr>
-						<td class='number'>6</td>
-						<td class='number'>7</td>
-						<td class='number'>8</td>
-						<td class='number'>9</td>
-						<td class='number'>0</td>
-						<td class='reset' onclick='reset()'>Reset</td>
-					</tr>
-				</table>
-			</div>
-			<div id='container-vertical' style='display:none'>
-				<table>
-					<tr>
-						<td colspan='3' class='display gray'>
-							<div class='right'>
-								<span class='hour'></span>
-								<span class='min'></span>
-								<span class='sec'>0s</span>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td class='number active'>1</td>
-						<td class='number active'>2</td>
-						<td class='number active'>3</td>
-					</tr>
-					<tr>
-						<td class='number active'>4</td>
-						<td class='number active'>5</td>
-						<td class='number active'>6</td>
-					</tr>
-					<tr>
-						<td class='number active'>7</td>
-						<td class='number active'>8</td>
-						<td class='number active'>9</td>
-					</tr>
-					<tr>
-						<td class='start' onclick='start()'>Start</td>
-						<td class='stop' onclick='pause()'>Stop</td>
-						<td class='number active'>0</td>
-						<td class='reset' onclick='reset()'>Reset</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<audio id='alarm' src='sound/alarm.mp3' controls preload='auto' autobuffer loop style='visibility:hidden'></audio>
-	</body>
-	<script src='js/jquery-1.10.2.min.js'></script>
-	<script type='text/javascript'>
-		var inputTimeString = '';
+<head>
+	<meta charset='utf-8' />
+	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+	<title>Timer</title>
+	<!-- Main Document -->
+	<style>
+		body{
+			background-color:#333333;
+			overflow:hidden;
+			-ms-touch-action:none;
+			font-family:monospace;
+		}
+		#view{
+			width:100%;
+			height:100%;
+			left:0px;
+			top:0px;
+			position:fixed;
+		}
+		.display{
+			color:white;
+			padding-right:1em;
+			padding-left:1em;
+			text-align:right !important;
+		}
+		table{
+			width:100%;
+			height:100%;
+			border-spacing:.1em;
+		}
+		td{
+			text-align:center;
+			font-weight:bold;
+		}
+		#container-vertical,
+		#container-horizontal{
+			bottom:0;
+			left:0;
+			top:0;
+			right:0;
+			margin:auto;
+			position:absolute;
+		}
 
-		var Display = {
-			Update: function (ms) {
+		#container-horizontal table tr td{
+			width: 16.666%;
+		}
+		#container-vertical table tr td{
+			width: 33.333%;
+		}
+	</style>
+	<!-- Button Styles -->
+	<style>
+		#view:not(.idle) .number{
+			color:#777777;
+			background-color:#333333;
+		}
+		#view.started .start,
+		#view.alarm .start{
+			display:none;
+		}
+		#view.paused .stop,
+		#view.idle .stop{
+			display:none;
+		}
+		#view.idle .number{
+			background-color:#FFFFFF;
+			cursor:pointer;
+		}
+		#view.idle .number:active{
+			background-color:#dddddd;
+		}
+		.gray{
+			background-color:#555555;
+		}
+		.red{
+			background-color:rgb(194,33,86);
+		}
+		.start{
+			color:white;
+			background-color:rgb(33,194,86);
+			font-size:0.7em;
+			cursor:pointer;
+		}
+		.start:active{
+			background-color:rgb(24,142,63);
+		}
+		.stop{
+			color:white;
+			background-color:rgb(194,33,86);
+			font-size:0.7em;
+			cursor:pointer;
+		}
+		.stop:active{
+			background-color:rgb(142,24,63);
+		}
+		.reset{
+			color:white;
+			background-color:rgb(33,86,194);
+			font-size:0.7em;
+			cursor:pointer;
+		}
+		.reset:active{
+			background-color:rgb(24,63,142);
+		}
+	</style>
+</head>
+<body>
+	<div id='view' class='idle'>
+		<div id='container-horizontal'>
+			<table>
+				<tr>
+					<td colspan='6' class='display gray'></td>
+				</tr>
+				<tr>
+					<td class='number'>1</td>
+					<td class='number'>2</td>
+					<td class='number'>3</td>
+					<td class='number'>4</td>
+					<td class='number'>5</td>
+					<td class='start'>Start</td>
+					<td class='stop'>Stop</td>
+				</tr>
+				<tr>
+					<td class='number'>6</td>
+					<td class='number'>7</td>
+					<td class='number'>8</td>
+					<td class='number'>9</td>
+					<td class='number'>0</td>
+					<td class='reset'>Reset</td>
+				</tr>
+			</table>
+		</div>
+		<div id='container-vertical' style='display:none'>
+			<table>
+				<tr>
+					<td colspan='3' class='display gray'></td>
+				</tr>
+				<tr>
+					<td class='number'>1</td>
+					<td class='number'>2</td>
+					<td class='number'>3</td>
+				</tr>
+				<tr>
+					<td class='number'>4</td>
+					<td class='number'>5</td>
+					<td class='number'>6</td>
+				</tr>
+				<tr>
+					<td class='number'>7</td>
+					<td class='number'>8</td>
+					<td class='number'>9</td>
+				</tr>
+				<tr>
+					<td class='start'>Start</td>
+					<td class='stop'>Stop</td>
+					<td class='number'>0</td>
+					<td class='reset'>Reset</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<audio id='alarm' src='sound/alarm.mp3' controls preload='auto' autobuffer loop style='visibility:hidden'></audio>
+</body>
+<script type='text/javascript'>
+	(function() {
+		function View() {
+			this.view = document.getElementById("view");
+			this.containerHorizontal = document.getElementById('container-horizontal');
+			this.containerVertical = document.getElementById('container-vertical');
+
+			this.resize = function() {
+				var width = this.view.clientWidth;
+				var height = this.view.clientHeight;
+
+				if (width/height > 1.0953) {
+					this.containerHorizontal.style.display = '';
+					this.containerVertical.style.display = 'none';
+					if (width/6 < height/3)
+						height = (3/6) * this.view.clientWidth;
+					else
+						width = (6/3) * this.view.clientHeight;
+
+					var size = width/6;
+
+					this.containerHorizontal.style.height = height+'px';
+					this.containerHorizontal.style.width = width+'px';
+				} else {
+					this.containerHorizontal.style.display = 'none';
+					this.containerVertical.style.display = '';
+					if (width/3 < height/5)
+						height = (5/3) * this.view.clientWidth;
+					else
+						width = (3/5) * this.view.clientHeight;
+
+					var size = width/3;
+
+					this.containerVertical.style.height = height+'px';
+					this.containerVertical.style.width = width+'px';
+				}
+				document.body.style.fontSize = Math.floor(size*0.32) + 'px';
+			}
+
+			this.resize();
+		}
+
+		function Display() {
+			function pad(str, max) {
+				str = str.toString();
+				return str.length < max ? pad("0" + str, max) : str;
+			}
+
+			this.intervalId = null;
+			this.displays = document.getElementsByClassName('display');
+
+			this.update = function(ms) {
 				var sec = Math.floor(ms / 1000);
 				var hour = Math.floor(sec / 3600);
 				sec = sec - (hour * 3600);
 				var min = Math.floor(sec / 60);
 				sec = sec - (min * 60);
-				
-				if (hour > 0) {
-					$('.hour').text(hour+'h');
-					$('.min').text(this.Pad(min+'m',3));
-					$('.sec').text(this.Pad(sec+'s',3));
-					return;
+
+				var displayValue = [];
+
+				if (displayValue.length > 0 || hour > 0) {
+					if (displayValue.length > 0) {
+						displayValue.push(pad(hour, 2) + 'h');
+					} else {
+						displayValue.push(hour + 'h');
+					}
 				}
-				$('.hour').text('');
-				
-				if (min > 0) {
-					$('.min').text(min+'m');
-					$('.sec').text(this.Pad(sec+'s',3));
-					return;
+
+				if (displayValue.length > 0 || min > 0) {
+					if (displayValue.length > 0) {
+						displayValue.push(pad(min, 2) + 'm');
+					} else {
+						displayValue.push(min + 'm');
+					}
 				}
-				$('.min').text('');
 
-				$('.sec').text(sec+'s');
-			},
-			StartAlarm: function () {
-				if (this.state != 'idle')
-					return;
-				this.FlashInterval();
-				this.interval_id = setInterval(this.FlashInterval, 1000);
-				document.getElementById('alarm').play();
-				this.state = "alarm";
-			},
-			Reset: function () {
-				document.getElementById('alarm').pause();
-				this.Update(0);
-				this.StopAlarm();
-				this.state = "idle";
-			},
-			interval_id: 0,
-			state: "idle",
-			StopAlarm: function () {
-				$('.display').attr('class','display gray');
-				window.clearInterval(this.interval_id);
-				this.state = "idle";
-			},
-			FlashInterval: function () {
-				if ($('.display').attr('class') != 'display red')
-					$('.display').attr('class','display red');
-				else
-					$('.display').attr('class','display gray');
-			},
-			Pad: function (str, max) {
-				return str.length < max ? this.Pad("0" + str, max) : str;
-			}
-		}
-
-		var Timer = {
-			SetDuration: function (ms) {
-				this.duration = ms;
-				this.countdown = (this.duration != 0);
-			},
-			Start: function () {
-				currentTime = new Date().getTime();
-				this.endTime = currentTime + this.duration;
-				setTimeout(this.TimerInterval, 1);
-				this.interval_id = setInterval(this.TimerInterval, 1000);
-				this.state = "started";
-			},
-			Pause: function () {
-				clearInterval(this.interval_id);
-				currentTime = new Date().getTime();
-				this.duration = this.endTime - currentTime;
-				this.state = "paused";
-			},
-			Reset: function () {
-				clearInterval(this.interval_id);
-				Display.Reset();
-
-				endTime = 0;
-				countdown = false;
-				duration = 0;
-				this.state = "idle";
-			},
-			endTime: 0,
-			countdown: false,
-			interval_id: 0,
-			duration: 0,
-			state: "idle",
-			TimerInterval: function() {
-				var currentTime = new Date().getTime();
-				var timeDif = Timer.endTime - currentTime;
-				if (Timer.countdown && timeDif < 0) {
-					window.clearInterval(Timer.interval_id);
-					Display.Update(0);
-					Display.StartAlarm();
-					View.SetAlarm();
-					this.state = "alarm";
-				} else if (Timer.countdown) {
-					Display.Update(timeDif+1000);
+				if (displayValue.length > 0) {
+					displayValue.push(pad(sec, 2) + 's');
 				} else {
-					Display.Update(timeDif*-1);
+					displayValue.push(sec + 's');
+				}
+
+				displayValue = displayValue.join(' ');
+
+				forEach(this.displays, function(display) {
+					display.textContent = displayValue;
+				});
+			}
+
+			this.flash = function() {
+				forEach(this.displays, function(display) {
+					display.classList.toggle("red");
+					display.classList.toggle("gray");
+				});
+
+				if (this.intervalId == null) {
+					var _this = this;
+					this.intervalId = setInterval(function() {_this.flash();}, 1000);
 				}
 			}
+
+			this.reset = function() {
+				forEach(this.displays, function(display) {
+					display.classList.remove("red");
+					display.classList.add("gray");
+				});
+				this.update('');
+				window.clearInterval(this.intervalId);
+				this.intervalId = null;
+			}
+
+			this.reset();
 		}
 
-		var View = {
-			SetStarted: function () {
-				$("#view").attr("class","started");
-			},
-			SetPaused: function () {
-				$("#view").attr("class","paused");
-			},
-			Reset: function () {
-				$("#view").attr("class","idle");
+		function Alarm() {
+			this.start = function() {
+				document.getElementById("alarm").play();
+			};
+
+			this.reset = function() {
+				document.getElementById('alarm').pause();
+			};
+
+			this.reset();
+		}
+
+		function Timer() {
+			function convertToMs(timeString) {
+				var ts = '00000' + timeString;
+				var l = ts.length;
+				var sec = 0 + ts.substr(l-2,2);
+				var sec = +sec + ts.substr(l-4,2) * 60;
+				var sec = +sec + ts.substr(0,l-4) * 3600;
+				return sec * 1000;
+			}
+
+			this.display = new Display();
+			this.alarm = new Alarm();
+			this.state = new TimerState();
+
+			this.unparsedDuration;
+			this.duration ;
+			this.isCountdown;
+			this.endTime;
+			this.intervalId;
+
+			this.setDuration = function(duration) {
+				if (!this.state.isIdle()) {
+					return;
+				}
+
+				this.unparsedDuration = duration;
+				this.display.update(convertToMs(this.unparsedDuration));
+			}
+
+			this.getDuration = function() {
+				return this.unparsedDuration;
+			}
+
+			this.start = function() {
+				if (this.state.isIdle()) {
+					this.duration = convertToMs(this.unparsedDuration);
+					this.isCountdown = this.duration != 0;
+				}
+
+				var currentTime = new Date().getTime();
+				this.endTime = currentTime + this.duration;
+				var _this = this;
+				setTimeout(function() {_this.update();}, 1);
+				this.intervalId = setInterval(function() {_this.update();}, 1000);
+				this.state.setStarted();
+			}
+
+			this.pause = function() {
+				if (this.state.isAlarm()) {
+					var unparsedDuration = this.unparsedDuration;
+					this.reset();
+					this.setDuration(unparsedDuration);
+					return;
+				}
+
+				if (!this.state.isStarted()) {
+					return;
+				}
+
+				clearInterval(this.intervalId);
+				var currentTime = new Date().getTime();
+				this.duration = this.endTime - currentTime;
+				this.state.setPaused();
+			}
+
+			this.reset = function() {
+				clearInterval(this.intervalId);
+				this.unparsedDuration = '';
+				this.display.reset();
+				this.alarm.reset();
+
+				this.endTime = 0;
+				this.isCountdown = false;
+				this.duration = 0;
+				this.state.setIdle();
+			}
+
+			this.update = function() {
+				var currentTime = new Date().getTime();
+				var timeDif = this.endTime - currentTime;
+				if (this.isCountdown && timeDif < 0) {
+					window.clearInterval(this.intervalId);
+					this.state.setAlarm();
+					this.display.update(0);
+					this.display.flash();
+					this.alarm.start();
+				} else if (this.isCountdown) {
+					this.display.update(timeDif+1000);
+				} else {
+					this.display.update(timeDif*-1);
+				}
+			}
+
+			this.reset();
+		}
+
+		function TimerState() {
+			this.view = document.getElementById("view");
+
+			this.isIdle = function() {
+				return this.view.className == "idle";
+			}
+
+			this.isStarted = function() {
+				return this.view.className == "started";
+			}
+
+			this.isPaused = function() {
+				return this.view.className == "paused";
+			}
+
+			this.isAlarm = function() {
+				return this.view.className == "alarm";
+			}
+
+			this.setIdle = function() {
+				this.view.className = "idle";
+			}
+
+			this.setStarted = function() {
+				this.view.className = "started";
+			}
+
+			this.setPaused = function() {
+				this.view.className = "paused";
+			}
+
+			this.setAlarm = function() {
+				this.view.className = "alarm";
 			}
 		}
 
-		$(document).ready(reset(), resize());
-
-		/* Resizes width, height, button spacing, font sizes */
-		function resize(){
-			var width  = $('#view').width();
-			var height = $('#view').height();
-
-			if (width/height > 1.0953) {
-				$('#container-horizontal').show();
-				$('#container-vertical').hide();
-				if (width/6 < height/3)
-					height = (3/6) * $('#view').width();
-				else
-					width = (6/3) * $('#view').height();
-
-				var size = width/6;
-
-				$('#container-horizontal').css('height', height+'px');
-				$('#container-horizontal').css('width', width+'px');
-			} else {
-				$('#container-horizontal').hide();
-				$('#container-vertical').show();
-				if (width/3 < height/5)
-					height = (5/3) * $('#view').width();
-				else
-					width = (3/5) * $('#view').height();
-
-				var size = width/3;
-
-				$('#container-vertical').css('height', height+'px');
-				$('#container-vertical').css('width', width+'px');
+		var forEach = function(array, delegate) {
+			for(var i=0; i<array.length; ++i) {
+				delegate(array[i]);
 			}
-			$('body').css('font-size', Math.floor(size*0.32));
 		}
 
-		/* Starts either a countdown or countup timer */
-		function start(){
-			if ($("#view.idle").length > 0) {
-				Timer.SetDuration(convertToMs(inputTimeString));
-			}
-			Timer.Start();
-			View.SetStarted();
+		var addClickEventForEach = function(className, delegate) {
+			forEach(document.getElementsByClassName(className), function(element) {
+				element.addEventListener("click", delegate);
+			});
 		}
 
-		/* Pauses the timer */
-		function pause(){
-			if (Display.state == "alarm") {
-				reset();
-				return;
-			}
-			Timer.Pause();
-			View.SetPaused();
-		}
+		var view = new View();
+		var timer = new Timer();
 
-		/* Resets the timer back to 0 */
-		function reset(){
-			inputTimeString = "";
-			Timer.Reset();
-			View.Reset();
-		}
-
-		/* Adds a digit to the end of the display */
-		$('.number').click(function(){
-			if ($("#view.idle").length == 0)
-				return;
-			inputTimeString = inputTimeString + $(this).html();
-			Display.Update(convertToMs(inputTimeString));
+		window.addEventListener("resize", function() {
+			view.resize();
 		});
-		
-		function convertToMs(timeString) {
-			var ts = '00000' + inputTimeString;
-			var l = ts.length;
-			var sec = 0 + ts.substr(l-2,2);
-			var sec = +sec + ts.substr(l-4,2) * 60;
-			var sec = +sec + ts.substr(0,l-4) * 3600;
-			return sec * 1000;
-		}
-	</script>
+
+		addClickEventForEach("number", function(event) {
+			var duration = timer.getDuration() + event.target.textContent;
+			timer.setDuration(duration);
+		});
+
+		addClickEventForEach("start", function(event) {
+			timer.start();
+		});
+
+		addClickEventForEach("stop", function(event) {
+			timer.pause();
+		});
+
+		addClickEventForEach("reset", function(event) {
+			timer.reset();
+		});
+
+	}());
+</script>
 </html>
