@@ -503,6 +503,11 @@
 			timer.reset();
 		});
 
+		var time = /\?time=(\d+)(&|$)/.exec(window.location.href);
+		if (time !== null) {
+			timer.setDuration(time[1]);
+		}
+
 	}());
 </script>
 </html>
